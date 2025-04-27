@@ -1,19 +1,21 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/client"
+  output   = "./generated/client"
 }
 
 datasource db {
-  provider = "postgresql"
-  url = env("POSTGRES_URL") // uses connection pooling
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
   directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  email     String   @unique
-  name String?
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  email     String    @unique
+  name      String?
+  password  String
+  Session   Session[]
 }
 
 model Session {
@@ -21,5 +23,5 @@ model Session {
   userId    Int
   expiresAt DateTime
 
-  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+  user User @relation(references: [id], fields: [userId], onDelete: Cascade)
 }
