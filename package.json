@@ -13,7 +13,6 @@
     "@oslojs/crypto": "^1.0.1",
     "@oslojs/encoding": "^1.1.0",
     "@prisma/client": "^6.6.0",
-    "better-auth": "^1.2.7",
     "next": "15.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
