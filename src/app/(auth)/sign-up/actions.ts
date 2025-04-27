@@ -1,7 +1,7 @@
 "use server"
 
 import { checkEmailAvailability } from "@/lib/server/email";
-import { createUser } from "../../../lib/server/user";
+import { createUser } from "@/lib/server/user";
 import { redirect } from "next/navigation";
 
 type ActionResult = {
