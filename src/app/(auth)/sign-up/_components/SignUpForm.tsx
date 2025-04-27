@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 import { signUpAction } from "../actions";
 
 const initialState = {
@@ -8,14 +8,10 @@ const initialState = {
 };
 
 const SignUpForm = () => {
-    const [state, action] = useFormState(signUpAction, initialState);
-
-    const onSubmit = (formData: any) => {
-        return action(formData);
-    }
+    const [state, action] = useActionState(signUpAction, initialState);
 
     return (
-        <form onSubmit={onSubmit}>
+        <form action={action}>
             <h1>Sign Up</h1>
             <div>
                 <label htmlFor="email">Email</label>
