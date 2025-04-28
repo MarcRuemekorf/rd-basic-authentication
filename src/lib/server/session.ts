@@ -7,7 +7,31 @@ import { sha256 } from "@oslojs/crypto/sha2";
 import { cookies } from "next/headers";
 import { cache } from "react";
 
-// type SessionValidationResult = { session: Session; user: User } | { session: null; user: null };
+type SessionValidationResult = { session: Session; user: User } | { session: null; user: null };
+
+export async function validateSessionToken(token: string): Promise<SessionValidationResult> {
+    const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+    const session = await db.session.findUnique({
+        where: { id: sessionId },
+        include: {
+            user: true
+        }
+    });
+
+    if (session === null) {
+        return { session: null, user: null };
+    }
+
+    if (Date.now() >= session.expiresAt.getTime()) {
+        const deleteUser = await db.session.delete({
+            where: {
+                id: sessionId
+            },
+        })
+        return { session: null, user: null };
+    }
+    return { session: session, user: session.user };
+}
 
 export async function setSessionTokenCookie(token: string, expiresAt: Date): Promise<void> {
     const cookieStore = await cookies()
@@ -51,13 +75,12 @@ export async function createSession(token: string, userId: number): Promise<Sess
     return session;
 }
 
-// TODO: Validate session token
-// export const getCurrentSession = cache(async (): Promise<SessionValidationResult> => {
-//     const cookieStore = await cookies()
-//     const token = cookieStore.get("session")?.value ?? null;
-//     if (token === null) {
-//         return { session: null, user: null };
-//     }
-//     const result = validateSessionToken(token);
-//     return result;
-// });
+export const getCurrentSession = cache(async (): Promise<SessionValidationResult> => {
+    const cookieStore = await cookies()
+    const token = cookieStore.get("session")?.value ?? null;
+    if (token === null) {
+        return { session: null, user: null };
+    }
+    const result = validateSessionToken(token);
+    return result;
+});
