@@ -11,26 +11,37 @@ type SessionValidationResult = { session: Session; user: User } | { session: nul
 
 export async function validateSessionToken(token: string): Promise<SessionValidationResult> {
     const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-    const session = await db.session.findUnique({
+    const sessionWithUser = await db.session.findUnique({
         where: { id: sessionId },
         include: {
             user: true
         }
     });
 
-    if (session === null) {
+    if (sessionWithUser === null) {
         return { session: null, user: null };
     }
 
+    const session: Session = {
+        id: sessionWithUser.id,
+        userId: sessionWithUser.userId,
+        expiresAt: sessionWithUser.expiresAt
+    }
+
+    const user: User = {
+        ...sessionWithUser.user,
+    }
+
     if (Date.now() >= session.expiresAt.getTime()) {
-        const deleteUser = await db.session.delete({
+        const deleteSession = await db.session.delete({
             where: {
                 id: sessionId
             },
         })
         return { session: null, user: null };
     }
-    return { session: session, user: session.user };
+
+    return { session: session, user: user };
 }
 
 export async function setSessionTokenCookie(token: string, expiresAt: Date): Promise<void> {
@@ -81,6 +92,6 @@ export const getCurrentSession = cache(async (): Promise<SessionValidationResult
     if (token === null) {
         return { session: null, user: null };
     }
-    const result = validateSessionToken(token);
+    const result = await validateSessionToken(token);
     return result;
 });

@@ -1,10 +1,17 @@
 import Image from "next/image";
 import styles from "./page.module.css";
+import { getCurrentSession } from "@/lib/server/session";
 
-export default function Home() {
+export default async function Home() {
+  const { user } = await getCurrentSession()
   return (
     <div className={styles.page}>
       <main className={styles.main}>
+
+        {user && (
+          <h1>Welcome back, {user.email}</h1>
+        )}
+
         <Image
           className={styles.logo}
           src="/next.svg"
