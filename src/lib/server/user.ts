@@ -1,9 +1,8 @@
 "use server";
 
-import { PrismaClient } from "../../../prisma/generated/client";
+import db from "./db"
+import { User } from "../../../prisma/generated/client";
 import { hashPassword } from "./password";
-
-const prisma = new PrismaClient();
 
 export async function createUser(formData: FormData): Promise<{ message: string }> {
 
@@ -17,7 +16,7 @@ export async function createUser(formData: FormData): Promise<{ message: string 
 
     const passwordHash = await hashPassword(password);
 
-    const user = await prisma.user.create({
+    const user = await db.user.create({
         data: {
             name: name,
             email: email,
@@ -30,4 +29,30 @@ export async function createUser(formData: FormData): Promise<{ message: string 
     }
 
     return { message: "User created" };
+}
+
+export async function getUserFromEmail(email: string): Promise<User | null> {
+    const user = await db.user.findUnique({
+        where: {
+            email: email,
+        },
+    });
+
+    if (user === null) {
+        return null;
+    }
+
+    return user;
+}
+
+export async function getUserPasswordHash(userId: number): Promise<string> {
+    const user = await db.user.findUnique({
+        where: {
+            id: userId,
+        },
+    });
+    if (user === null) {
+        throw new Error("Invalid user ID");
+    }
+    return user.password;
 }

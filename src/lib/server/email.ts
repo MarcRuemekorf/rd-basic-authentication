@@ -1,12 +1,10 @@
 "use server";
 
-import { PrismaClient } from "../../../prisma/generated/client";
-
-const prisma = new PrismaClient();
+import db from "./db";
 
 export async function checkEmailAvailability(email: string): Promise<boolean> {
 
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
         where: {
             email: email
         },
