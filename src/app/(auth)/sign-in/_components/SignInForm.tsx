@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { signInAction } from "../actions";
+import { signInAction } from "../../actions";
 
 const initialState = {
     message: ""

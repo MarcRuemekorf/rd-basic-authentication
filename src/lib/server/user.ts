@@ -1,6 +1,6 @@
 "use server";
 
-import db from "./db"
+import db from "../db"
 import { User } from "../../../prisma/generated/client";
 import { hashPassword } from "./password";
 

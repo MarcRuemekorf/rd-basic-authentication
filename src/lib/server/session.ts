@@ -1,6 +1,6 @@
 "use server"
 
-import db from "./db"
+import db from "../db"
 import { User, Session } from "../../../prisma/generated/client";
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from "@oslojs/encoding";
 import { sha256 } from "@oslojs/crypto/sha2";
@@ -53,6 +53,10 @@ export async function setSessionTokenCookie(token: string, expiresAt: Date): Pro
         sameSite: "lax",
         expires: expiresAt
     });
+}
+
+export async function invalidateSession(sessionId: string): Promise<void> {
+    db.session.delete({ where: { id: sessionId } })
 }
 
 export async function deleteSessionTokenCookie(): Promise<void> {

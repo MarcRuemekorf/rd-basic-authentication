@@ -1,12 +1,34 @@
 "use server"
 
+import { checkEmailAvailability } from "@/lib/server/email";
+import { createUser } from "@/lib/server/user";
 import { verifyPasswordHash } from "@/lib/server/password";
-import { createSession, generateSessionToken, setSessionTokenCookie } from "@/lib/server/session";
+import { createSession, deleteSessionTokenCookie, generateSessionToken, getCurrentSession, invalidateSession, setSessionTokenCookie } from "@/lib/server/session";
 import { getUserFromEmail, getUserPasswordHash } from "@/lib/server/user";
 import { redirect } from "next/navigation";
 
 type ActionResult = {
     message: string;
+}
+
+export const signUpAction = async (_prev: ActionResult, formData: FormData): Promise<ActionResult> => {
+    const email = formData.get("email");
+
+    if (typeof email !== "string") {
+        return {
+            message: "Invalid email"
+        };
+    }
+
+    const emailAvailable = checkEmailAvailability(email);
+    if (!emailAvailable) {
+        return {
+            message: "Email is already used"
+        };
+    }
+    await createUser(formData)
+
+    return redirect("/");
 }
 
 export const signInAction = async (_prev: ActionResult, formData: FormData): Promise<ActionResult> => {
@@ -44,4 +66,13 @@ export const signInAction = async (_prev: ActionResult, formData: FormData): Pro
     await setSessionTokenCookie(sessionToken, session.expiresAt);
 
     return redirect("/");
+}
+
+export const SignOutAction = async () => {
+    const { session } = await getCurrentSession();
+    if (session === null) {
+        return;
+    }
+    await invalidateSession(session.id);
+    await deleteSessionTokenCookie();
 }
